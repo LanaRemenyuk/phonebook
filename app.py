@@ -1,8 +1,7 @@
 import csv
-import sys
 
 from os import path
-from typing import List, Optional
+from typing import List
 
 from inclusions import CHOICES
 
@@ -22,12 +21,19 @@ class PhoneBook:
     def _validate_data(key: int, value: str) -> bool:
         """Валидация входных данных."""
 
-        if key in (1, 2, 3, 4):
+        if key in (1, 2, 3):
             if value.isalpha():
                 return True
             return False
+        elif key == 4:
+            words = value.split()
+            for word in words:
+                if not word.isalpha():
+                    return False
+            return True
         elif key in (5, 6):
-            if value.isdigit() and len(value) > 10:
+            if (value.isdigit() and len(value) >= 11) or (
+                    value.startswith('+') and value[1:].isdigit() and len(value) >= 12):
                 return True
             return False
         else:
@@ -110,16 +116,13 @@ class PhoneBook:
             records = self._read_file()
             print("\n==Вы выбрали обновление записи==\n")
 
-            # Запрашиваем у пользователя информацию для поиска записи
             search_key = input("Введите фамилию контакта для поиска записи: ")
 
-            # Ищем записи, соответствующие заданному ключу
             matching_records = []
             for record in records:
                 if record[0] == search_key:
                     matching_records.append(record)
 
-            # Если найдено несколько записей, предлагаем выбрать одну
             if len(matching_records) > 1:
                 print("Найдено несколько записей:")
                 for i, record in enumerate(matching_records):
@@ -137,7 +140,6 @@ class PhoneBook:
                 print("Запись не найдена.")
                 return
 
-            # Получаем новые значения для обновления записи
             new_values = []
             for key, val in CHOICES.items():
                 while True:
@@ -147,10 +149,8 @@ class PhoneBook:
                         break
                     print("Введите верные данные.")
 
-            # Обновляем запись в справочнике
             records[record_index] = new_values
 
-            # Записываем обновленные данные в файл
             self._write_file(records)
 
             print("Запись успешно обновлена.")
@@ -162,7 +162,7 @@ class PhoneBook:
         """
         Добавляет функционал поиска по характеристикам
         """
-        search_keys = input("Введите характеристики для поиска (через запятую с заглавной буквы): ")
+        search_keys = input("Введите характеристики для поиска (через запятую): ")
         search_values = input("Введите значения для поиска (через запятую): ")
 
         search_keys = [key.strip().capitalize() for key in search_keys.split(",")]
